@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>SPA Usuarios - Test</title>
+</head>
+<body>
+
+    <!-- LOGIN -->
+    <div id="login">
+        <h1>Login</h1>
+        <input id="loginNombre" placeholder="Nombre" required>
+        <input id="loginApellido" placeholder="Apellido" required>
+        <label>
+            <input type="checkbox" id="loginAdmin">
+            Administrador
+        </label>
+        <button id="btnLogin">Ingresar</button>
+    </div>
+
+    <!-- APP -->
+    <div id="app" style="display:none">
+        <button id="btnLogout">Cerrar sesión</button>
+        <h1>Usuarios</h1>
+        <button id="nuevoUsuario">Crear Usuario</button>
+        <button id="toggleListado">Ocultar Listado</button>
+        <button id="irListado">Ir al listado</button>
+
+        <div id="contenido"></div>
+
+        <h3 id="tituloListado">Listado</h3>
+        <ul id="lista"></ul>
+
+        <form id="formUsuario" style="display:none">
+            <input id="nombre" placeholder="Nombre" required>
+            <input id="apellido" placeholder="Apellido" required>
+            <input id="email" type="email" placeholder="Email" required>
+            <button type="submit">Guardar</button>
+            <button type="button" id="cancelar">Cancelar</button>
+        </form>
+    </div>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>
