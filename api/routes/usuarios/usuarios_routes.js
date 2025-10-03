@@ -18,7 +18,7 @@ export default async function rutasUsuario(fastify, opts) {
     }
   );
 
-  fastify.post(
+  /*  fastify.post(
     "/",
     {
       schema: {
@@ -28,7 +28,7 @@ export default async function rutasUsuario(fastify, opts) {
         body: Type.Object({
           nombre: Type.String(),
           apellido: Type.String(),
-          edad: Type.Number(),
+          email: Type.String(),
         }),
         security: [{ bearerAuth: [] }],
       },
@@ -41,10 +41,10 @@ export default async function rutasUsuario(fastify, opts) {
       );
       const nuevoId = maxId + 1;
 
-      const { nombre, apellido, edad } = req.body;
-      const nuevousuario = { nombre, apellido, edad, id_usuario: nuevoId };
+      const { nombre, apellido, email } = req.body;
+      const nuevousuario = { nombre, apellido, email, id_usuario: nuevoId };
       usuarios.push(nuevousuario);
       return reply.code(201).send(nuevousuario);
     }
-  );
+  ); */
 }

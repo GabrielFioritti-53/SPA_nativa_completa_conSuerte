@@ -8,11 +8,15 @@ export const usuarios = [
     nombre: "Gabriel",
     apellido: "Fioritti",
     email: "fiorittigabriel@gmail.com",
+    password: "1234",
+    roles: ["admin", "user"],
   },
   {
     id_usuario: 2,
     nombre: "Paula",
     apellido: "Tomas",
     email: "tomasannapaula@gmail.com",
+    password: "1234",
+    roles: ["user"],
   },
 ];
