@@ -1,222 +1,194 @@
-import * as UsuarioService from "./services/usuario_services.js";
-import * as AuthService from "./services/auth_services.js";
+import { getAll, getById, erase, update } from "../services/usuario.js";
+import { register, login } from "./services/auth.js";
 
-let usuarioEditando = null;
-let listadoVisible = true;
+/* ----------------------------
+   DOM: botones, listas (listas primero)
+   ---------------------------- */
+const btnList = document.getElementById("btn-list");
+const btnCreate = document.getElementById("btn-create");
+const btnLogin = document.getElementById("btn-login");
+const btnRegister = document.getElementById("btn-register");
 
-const loginDiv = document.getElementById("login");
-const appDiv = document.getElementById("app");
-const btnLogin = document.getElementById("btnLogin");
-const loginNombre = document.getElementById("loginNombre");
-const loginAdmin = document.getElementById("loginAdmin");
-const btnLogout = document.getElementById("btnLogout");
-const contenido = document.getElementById("contenido");
-const usuarioNuevo = document.getElementById("nuevoUsuario");
-const form = document.getElementById("formUsuario");
-const inputNombre = document.getElementById("nombre");
-const inputApellido = document.getElementById("apellido");
-const inputEmail = document.getElementById("email");
-const btnCancelar = document.getElementById("cancelar");
-const btnToggleListado = document.getElementById("toggleListado");
-const btnIrListado = document.getElementById("irListado");
-const tituloListado = document.getElementById("tituloListado");
-const lista = document.getElementById("lista");
+const sections = {
+  list: document.getElementById("section-list"),
+  create: document.getElementById("section-create"),
+  edit: document.getElementById("section-edit"),
+  login: document.getElementById("section-login"),
+  register: document.getElementById("section-register"),
+};
 
-function toggleListadoElementos(mostrar) {
-  if (mostrar) {
-    lista.style.display = "block";
-    contenido.style.display = "block";
-    tituloListado.style.display = "block";
-  } else {
-    lista.style.display = "none";
-    contenido.style.display = "none";
-    tituloListado.style.display = "none";
-  }
+const usersEl = document.getElementById("users");
+
+/* ----------------------------
+   Formularios
+   ---------------------------- */
+const formCreate = document.getElementById("form-create");
+const formEdit = document.getElementById("form-edit");
+const formLogin = document.getElementById("form-login");
+const formRegister = document.getElementById("form-register");
+const btnCancelEdit = document.getElementById("btn-cancel-edit");
+
+let isAuthenticated = Boolean(localStorage.getItem("token"));
+
+/* ----------------------------
+   Helpers: mostrar/ocultar vistas (una a la vez)
+   ---------------------------- */
+function hideAll() {
+  Object.values(sections).forEach((s) => (s.style.display = "none"));
+}
+function toggleSection(name) {
+  const s = sections[name];
+  if (!s) return;
+  const currentlyVisible = s.style.display === "block";
+  hideAll();
+  if (!currentlyVisible) s.style.display = "block";
 }
 
-function mostrarFormulario(usuario) {
-  usuarioEditando = null;
-  if (usuario) {
-    usuarioEditando = usuario;
-    inputNombre.value = usuario.nombre;
-    inputApellido.value = usuario.apellido;
-    inputEmail.value = usuario.email;
-  } else {
-    inputNombre.value = "";
-    inputApellido.value = "";
-    inputEmail.value = "";
-  }
-
-  form.style.display = "block";
-  toggleListadoElementos(false);
-}
-
-function ocultarFormulario() {
-  usuarioEditando = null;
-  form.style.display = "none";
-
-  if (listadoVisible) {
-    toggleListadoElementos(true);
-  }
-}
-
-function actualizarVistaLogin() {
-  const usuario = AuthService.getUsuarioActual();
-  if (usuario) {
-    loginDiv.style.display = "none";
-    appDiv.style.display = "block";
-    if (usuario.is_admin) {
-      usuarioNuevo.style.display = "inline-block";
-    } else {
-      usuarioNuevo.style.display = "none";
-    }
-  } else {
-    loginDiv.style.display = "block";
-    appDiv.style.display = "none";
-  }
-}
-
-btnLogin.addEventListener("click", async function () {
-  const nombre = loginNombre.value.trim();
-  const esAdmin = loginAdmin.checked;
-  if (!nombre) {
-    alert("Ingrese un nombre");
-    return;
-  }
-
-  AuthService.login(nombre, esAdmin);
-  actualizarVistaLogin();
-  await mostrarListado();
-});
-
-btnLogout.addEventListener("click", function () {
-  AuthService.logout();
-  actualizarVistaLogin();
-});
-
-usuarioNuevo.addEventListener("click", function () {
-  mostrarFormulario();
-});
-btnCancelar.addEventListener("click", function () {
-  ocultarFormulario();
-});
-btnIrListado.addEventListener("click", function () {
-  ocultarFormulario();
-});
-btnToggleListado.addEventListener("click", function () {
-  listadoVisible = !listadoVisible;
-  toggleListadoElementos(listadoVisible);
-
-  if (listadoVisible) {
-    btnToggleListado.textContent = "Ocultar Listado";
-  } else {
-    btnToggleListado.textContent = "Mostrar Listado";
-  }
-});
-
-async function mostrarListado() {
+/* ----------------------------
+   Render listado
+   ---------------------------- */
+async function renderList() {
   try {
-    const usuarios = await UsuarioService.getAll();
-    contenido.innerHTML = "";
-    lista.innerHTML = "";
-
-    if (usuarios.length === 0) {
-      lista.innerHTML = "<li>No hay usuarios registrados</li>";
+    const usuarios = await getAll();
+    if (!Array.isArray(usuarios) || usuarios.length === 0) {
+      usersEl.innerHTML = "<li>No hay usuarios</li>";
       return;
     }
-
-    usuarios.forEach(function (usuario) {
-      const registro = document.createElement("li");
-
-      const infoUsuario = document.createElement("span");
-      infoUsuario.textContent = `${usuario.nombre} ${usuario.apellido} - ${
-        usuario.email || "Sin email"
-      }`;
-
-      const btnModificar = document.createElement("button");
-      btnModificar.textContent = "Modificar";
-      btnModificar.addEventListener("click", async function () {
-        const actual = AuthService.getUsuarioActual();
-        if (!actual || !actual.is_admin) {
-          alert("Solo admins pueden modificar");
-          return;
-        }
-        const usuarioCompleto = await UsuarioService.getById(
-          usuario.id_usuario
-        );
-        mostrarFormulario(usuarioCompleto);
-      });
-
-      const btnEliminar = document.createElement("button");
-      btnEliminar.textContent = "Eliminar";
-      btnEliminar.addEventListener("click", async function () {
-        const actual = AuthService.getUsuarioActual();
-        if (!actual || !actual.is_admin) {
-          alert("Solo admins pueden eliminar");
-          return;
-        }
-        if (
-          confirm(
-            `¿Estás seguro de eliminar a ${usuario.nombre} ${usuario.apellido}?`
-          )
-        ) {
-          await UsuarioService.remove(usuario.id_usuario);
-          await mostrarListado();
-        }
-      });
-
-      registro.appendChild(infoUsuario);
-
-      const actual = AuthService.getUsuarioActual();
-      if (actual && actual.is_admin) {
-        registro.appendChild(btnModificar);
-        registro.appendChild(btnEliminar);
-      }
-
-      lista.appendChild(registro);
-    });
+    usersEl.innerHTML = usuarios
+      .map(
+        (u) => `
+      <li data-id="${u.id_usuario}">
+        ${u.nombre} ${u.apellido ?? ""} ${u.edad ?? ""}
+        <button class="edit" data-id="${u.id_usuario}" data-nombre="${
+          u.nombre
+        }" data-apellido="${u.apellido ?? ""}" data-email="${
+          u.email ?? ""
+        }">Editar</button>
+        <button class="delete" data-id="${u.id_usuario}">Borrar</button>
+      </li>`
+      )
+      .join("");
   } catch (err) {
-    console.error("Error en mostrarListado:", err);
-    contenido.innerHTML =
-      "<p style='color:red'>Error al cargar la lista de usuarios</p>";
+    console.error("Error al listar:", err);
+    usersEl.innerHTML = "<li>Error al cargar usuarios</li>";
   }
 }
 
-form.addEventListener("submit", async function (event) {
-  event.preventDefault();
+/* ----------------------------
+   Abrir formulario de edición con datos
+   ---------------------------- */
+function openEditFromDataset(ds) {
+  formEdit.elements["id"].value = ds.id;
+  formEdit.elements["nombre"].value = ds.nombre || "";
+  formEdit.elements["apellido"].value = ds.apellido || "";
+  formEdit.elements["email"].value = ds.email || "";
+  toggleSection("edit");
+}
 
-  const nombre = inputNombre.value.trim();
-  const apellido = inputApellido.value.trim();
-  const email = inputEmail.value.trim();
+/* ----------------------------
+   Listeners: botones y delegación en la lista
+   ---------------------------- */
+btnList.addEventListener("click", async () => {
+  await renderList();
+  toggleSection("list");
+});
 
-  if (!nombre || !apellido) {
-    alert("Nombre y apellido son obligatorios");
+btnCreate.addEventListener("click", () => toggleSection("create"));
+btnLogin.addEventListener("click", () => toggleSection("login"));
+btnRegister.addEventListener("click", () => toggleSection("register"));
+
+usersEl.addEventListener("click", async (e) => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const id = btn.dataset.id;
+  if (btn.classList.contains("edit")) {
+    openEditFromDataset(btn.dataset);
     return;
   }
-
-  try {
-    if (usuarioEditando) {
-      await UsuarioService.update(usuarioEditando.id_usuario, {
-        nombre: nombre,
-        apellido: apellido,
-        email: email,
-      });
-    } else {
-      await UsuarioService.create({
-        nombre: nombre,
-        apellido: apellido,
-        email: email,
-      });
+  if (btn.classList.contains("delete")) {
+    if (confirm("¿Eliminar usuario?")) {
+      try {
+        await erase(Number(id));
+        await renderList();
+      } catch (err) {
+        console.error(err);
+      }
     }
-    ocultarFormulario();
-    await mostrarListado();
-  } catch (err) {
-    console.error("Error al guardar usuario:", err);
-    alert("Error al guardar usuario");
   }
 });
 
-actualizarVistaLogin();
-if (AuthService.getUsuarioActual()) {
-  mostrarListado();
-}
+/* ----------------------------
+   Form handlers
+   ---------------------------- */
+formCreate.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nombre = formCreate.elements["nombre"].value.trim();
+  const apellido = formCreate.elements["apellido"].value.trim();
+  const email = String(formCreate.elements["email"].value) || null;
+  try {
+    await create({ nombre, apellido, email });
+    formCreate.reset();
+    await renderList();
+    toggleSection("list"); // después de crear, volvemos al listado
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+formEdit.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const id = Number(formEdit.elements["id"].value);
+  const nombre = formEdit.elements["nombre"].value.trim();
+  const apellido = formEdit.elements["apellido"].value.trim();
+  const email = String(formEdit.elements["email"].value) || null;
+  try {
+    await update(id, { nombre, apellido, email });
+    formEdit.reset();
+    await renderList();
+    toggleSection("list");
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+btnCancelEdit.addEventListener("click", () => toggleSection("edit"));
+
+formRegister.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nombre = formRegister.elements["nombre"].value.trim();
+  const apellido = formRegister.elements["apellido"].value.trim();
+  const email = String(formRegister.elements["email"].value) || null;
+  const password = formRegister.elements["password"].value;
+  try {
+    await register({ nombre, apellido, email, password });
+    formRegister.reset();
+    await renderList();
+    toggleSection("list");
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+formLogin.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const nombre = formLogin.elements["nombre"].value.trim();
+  const password = formLogin.elements["password"].value;
+  try {
+    await login({ nombre, password });
+    if (localStorage.getItem("token")) isAuthenticated = true;
+    formLogin.reset();
+    await renderList();
+    toggleSection("list");
+  } catch (err) {
+    console.error(err);
+  }
+});
+
+/* ----------------------------
+   WebSocket (opcional, lo dejo mínimo)
+   ---------------------------- */
+const socket = new WebSocket("ws://localhost:4000");
+socket.addEventListener("message", (ev) => console.log("WS:", ev.data));
+
+/* carga inicial opcional (no muestra nada hasta que pulses) */
+// await renderList(); // descomenta si quieres que se listé al cargar

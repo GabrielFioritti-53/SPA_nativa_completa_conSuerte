@@ -1,19 +1,21 @@
-const USUARIO_KEY = "usuario_actual";
+import { apiService } from "./api";
 
-export function login(nombre, esAdmin = false) {
-    const usuario = { nombre, is_admin: esAdmin };
-    localStorage.setItem(USUARIO_KEY, JSON.stringify(usuario));
+export async function register({ nombre, apellido, email, password }) {
+  return await apiService("/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre, apellido, email, password }),
+  });
 }
 
-export function logout() {
-    localStorage.removeItem(USUARIO_KEY);
-}
-
-export function getUsuarioActual() {
-    const usuarioStr = localStorage.getItem(USUARIO_KEY);
-    return usuarioStr ? JSON.parse(usuarioStr) : null;
-}
-
-export function mantenerSesion() {
-    return !!getUsuarioActual();
+export async function login({ nombre, password }) {
+  const response = await apiService("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nombre, password }),
+  });
+  const token = response.token;
+  if (!token) throw new Error("El servidor no devolvió token.");
+  localStorage.setItem("token", token);
+  return token;
 }
