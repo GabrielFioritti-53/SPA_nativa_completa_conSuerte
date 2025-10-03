@@ -16,11 +16,11 @@ fastify.register(fastifyAutoload, {
 });
 // Registro las rutas definidas en otros archivos
 fastify.register(fastifyAutoload, {
-  dir: join(__dirname, "routes", "usuarios"),
+  dir: join(__dirname, "routes"),
 });
-fastify.register(fastifyAutoload, {
+/* fastify.register(fastifyAutoload, {
   dir: join(__dirname, "routes", "usuarios_id"),
-});
+}); */
 
 /* const dir = join(__dirname, "plugins");
 console.log({ dir }); */

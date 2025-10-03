@@ -14,16 +14,23 @@ export default async function usuarioIDRoutes(fastify) {
         body: Type.Object({
           nombre: Type.String(),
           apellido: Type.String(),
-          edad: Type.Number(),
+          email: Type.String(),
         }),
         security: [{ bearerAuth: [] }],
       },
-      preHandler: [fastify.authenticate],
+      onRequest: async (req, res) => {
+        fastify.authenticate(req, res);
+
+        const user = req.user;
+        if (!user || !user.roles.includes("admin")) {
+          return res.code(403).send({ error: "Faltan permisos" });
+        }
+      },
     },
 
     async (req, reply) => {
       const id = Number(req.params.id_usuario);
-      const { nombre, apellido, edad } = req.body;
+      const { nombre, apellido, email } = req.body;
 
       const usuarioCambiar = usuarios.find((u) => Number(u.id_usuario) === id);
       if (!usuarioCambiar)
@@ -31,7 +38,7 @@ export default async function usuarioIDRoutes(fastify) {
 
       usuarioCambiar.nombre = nombre;
       usuarioCambiar.apellido = apellido;
-      usuarioCambiar.edad = edad;
+      usuarioCambiar.email = email;
       return reply.code(200).send(usuarioCambiar);
     }
   );
@@ -43,8 +50,18 @@ export default async function usuarioIDRoutes(fastify) {
         summary: "Eliminar usuarios",
         description: "Ruta para eliminar usuarios ",
         tags: ["usuarios"],
+        security: [{ bearerAuth: [] }],
+      },
+      onRequest: async (req, res) => {
+        fastify.authenticate(req, res);
+
+        const user = req.user;
+        if (!user || !user.roles.includes("admin")) {
+          return res.code(403).send({ error: "Faltan permisos" });
+        }
       },
     },
+
     async (req, reply) => {
       const id = Number(req.params.id_usuario);
       const index = usuarios.findIndex((u) => Number(u.id_usuario) === id);
