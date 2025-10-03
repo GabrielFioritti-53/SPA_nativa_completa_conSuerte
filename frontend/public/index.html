@@ -1,45 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="es">
+  <head>
     <meta charset="utf-8" />
-    <title>SPA Usuarios - Test</title>
-</head>
-<body>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>SPA Nativa</title>
+  </head>
+  <body>
+    <h1>SPA Nativa</h1>
 
-    <!-- LOGIN -->
-    <div id="login">
-        <h1>Login</h1>
-        <input id="loginNombre" placeholder="Nombre" required>
-        <input id="loginApellido" placeholder="Apellido" required>
-        <label>
-            <input type="checkbox" id="loginAdmin">
-            Administrador
-        </label>
-        <button id="btnLogin">Ingresar</button>
+    <div id="controls">
+      <button id="btn-list">Listar usuarios</button>
+      <button id="btn-create">Crear usuario</button>
+      <button id="btn-login">Login</button>
+      <button id="btn-register">Registro</button>
     </div>
 
-    <!-- APP -->
-    <div id="app" style="display:none">
-        <button id="btnLogout">Cerrar sesión</button>
-        <h1>Usuarios</h1>
-        <button id="nuevoUsuario">Crear Usuario</button>
-        <button id="toggleListado">Ocultar Listado</button>
-        <button id="irListado">Ir al listado</button>
+    <div id="section-list" style="display: none">
+      <h3>Listado</h3>
+      <ul id="users"></ul>
+    </div>
 
-        <div id="contenido"></div>
+    <div id="section-create" style="display: none">
+      <h3>Crear usuario</h3>
+      <form id="form-create">
+        <label>Nombre <input name="nombre" required /></label><br />
+        <label>Apellido <input name="apellido" /></label><br />
+        <label>Email <input name="email" type="string" /></label><br />
+        ><br />
+        <button type="submit">Guardar</button>
+      </form>
+    </div>
 
-        <h3 id="tituloListado">Listado</h3>
-        <ul id="lista"></ul>
+    <div id="section-edit" style="display: none">
+      <h3>Editar usuario</h3>
+      <form id="form-edit">
+        <input type="hidden" name="id" />
+        <label>Nombre <input name="nombre" required /></label><br />
+        <label>Apellido <input name="apellido" /></label><br />
+        <label>Email <input name="email" type="string" /></label><br />
+        <button type="submit">Guardar cambios</button>
+        <button type="button" id="btn-cancel-edit">Cancelar</button>
+      </form>
+    </div>
 
-        <form id="formUsuario" style="display:none">
-            <input id="nombre" placeholder="Nombre" required>
-            <input id="apellido" placeholder="Apellido" required>
-            <input id="email" type="email" placeholder="Email" required>
-            <button type="submit">Guardar</button>
-            <button type="button" id="cancelar">Cancelar</button>
-        </form>
+    <div id="section-login" style="display: none">
+      <h3>Login</h3>
+      <form id="form-login">
+        <label>Nombre <input name="nombre" required /></label><br />
+        <label
+          >Password <input name="password" type="password" required /></label
+        ><br />
+        <button type="submit">Entrar</button>
+      </form>
+    </div>
+
+    <div id="section-register" style="display: none">
+      <h3>Registro</h3>
+      <form id="form-register">
+        <label>Nombre <input name="nombre" required /></label><br />
+        <label>Apellido <input name="apellido" /></label><br />
+        <label>Email <input name="email" type="string" /></label><br />
+        <label
+          >Password
+          <input
+            name="password"
+            type="password"
+            minlength="6"
+            required /></label
+        ><br />
+        <button type="submit">Registrar</button>
+      </form>
     </div>
 
     <script type="module" src="index.js"></script>
-</body>
+  </body>
 </html>
